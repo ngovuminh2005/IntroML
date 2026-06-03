@@ -1,4 +1,6 @@
 import os
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 from glob import glob
 from typing import Optional
 
