@@ -68,12 +68,31 @@ def get_corrupt_function(config: List[dict]):
         cls = _resolve_aug_fn(name)
         prob = aug_params.pop('prob') if 'prob' in aug_params else .5
         if cls == albu.CoarseDropout:
-            if 'num_holes' in aug_params:
-                aug_params['max_holes'] = aug_params.pop('num_holes')
-            if 'max_h_size' in aug_params:
-                aug_params['max_height'] = aug_params.pop('max_h_size')
-            if 'max_w_size' in aug_params:
-                aug_params['max_width'] = aug_params.pop('max_w_size')
+            num_holes = aug_params.pop('num_holes', None) or aug_params.pop('max_holes', 3)
+            h_size = aug_params.pop('max_h_size', None) or aug_params.pop('max_height', 8)
+            w_size = aug_params.pop('max_w_size', None) or aug_params.pop('max_width', 8)
+            
+            import inspect
+            sig = inspect.signature(cls.__init__)
+            if 'num_holes_range' in sig.parameters:
+                aug_params['num_holes_range'] = (num_holes, num_holes)
+                aug_params['hole_height_range'] = (h_size, h_size)
+                aug_params['hole_width_range'] = (w_size, w_size)
+            else:
+                aug_params['max_holes'] = num_holes
+                aug_params['max_height'] = h_size
+                aug_params['max_width'] = w_size
+        elif cls == albu.ImageCompression:
+            quality_lower = aug_params.pop('quality_lower', 70)
+            quality_upper = aug_params.pop('quality_upper', 90)
+            
+            import inspect
+            sig = inspect.signature(cls.__init__)
+            if 'quality_range' in sig.parameters:
+                aug_params['quality_range'] = (quality_lower, quality_upper)
+            else:
+                aug_params['quality_lower'] = quality_lower
+                aug_params['quality_upper'] = quality_upper
         augs.append(cls(p=prob, **aug_params))
 
     augs = albu.OneOf(augs)
