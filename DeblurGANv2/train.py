@@ -2,6 +2,13 @@ import logging
 import os
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
+
+import pretrainedmodels.models.inceptionresnetv2 as ir2
+if 'inceptionresnetv2' in ir2.pretrained_settings:
+    for key in ir2.pretrained_settings['inceptionresnetv2']:
+        if 'url' in ir2.pretrained_settings['inceptionresnetv2'][key]:
+            ir2.pretrained_settings['inceptionresnetv2'][key]['url'] = 'https://huggingface.co/jscanvic/mirror/resolve/main/inceptionresnetv2-520b38e4.pth'
+
 from functools import partial
 
 import cv2
