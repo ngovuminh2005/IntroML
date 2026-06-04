@@ -10,7 +10,7 @@ train:
   preload: &PRELOAD false
   preload_size: &PRELOAD_SIZE 0
   bounds: [0, .9]
-  scope: geometric
+  scope: weak
   corrupt: &CORRUPT
     - name: cutout
       prob: 0.5
@@ -31,12 +31,12 @@ val:
   files_a: *FILES_A
   files_b: *FILES_B
   size: *SIZE
-  scope: geometric
+  scope: weak
   crop: center
   preload: *PRELOAD
   preload_size: *PRELOAD_SIZE
   bounds: [.9, 1]
-  corrupt: *CORRUPT
+  corrupt: ~
 
 phase: train
 warmup_num: 3
