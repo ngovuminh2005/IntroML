@@ -120,7 +120,7 @@ class PairedDataset(Dataset):
         files_a, files_b = map(lambda x: sorted(glob(config[x], recursive=True)), ('files_a', 'files_b'))
         transform_fn = aug.get_transforms(size=config['size'], scope=config['scope'], crop=config['crop'])
         normalize_fn = aug.get_normalize()
-        corrupt_fn = aug.get_corrupt_function(config['corrupt'])
+        corrupt_fn = aug.get_corrupt_function(config['corrupt']) if config.get('corrupt') else None
 
         hash_fn = hash_from_paths
         # ToDo: add more hash functions
