@@ -186,12 +186,9 @@ def main(config_path='config/config.yaml'):
         config = yaml.load(f, Loader=yaml.SafeLoader)
 
     batch_size = config.pop('batch_size')
-    # get_dataloader = partial(DataLoader,
-    #                          batch_size=batch_size,
-    #                          num_workers=0 if os.environ.get('DEBUG') else cpu_count(),
-    #                          shuffle=True, drop_last=True)
     get_dataloader = partial(DataLoader,
                              batch_size=batch_size,
+                             num_workers=0 if os.environ.get('DEBUG') else cpu_count(),
                              shuffle=True, drop_last=True)
 
     datasets = map(config.pop, ('train', 'val'))
