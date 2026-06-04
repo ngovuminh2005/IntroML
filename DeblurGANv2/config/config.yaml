@@ -52,7 +52,7 @@ model:
   norm_layer: instance
   dropout: True
 
-num_epochs: 10
+num_epochs: 300
 train_batches_per_epoch: 1000
 val_batches_per_epoch: 100
 batch_size: 1
@@ -60,8 +60,8 @@ image_size: [256, 256]
 
 optimizer:
   name: adam
-  lr: 0.01
+  lr: 0.0001
 scheduler:
   name: linear
-  start_epoch: 50
+  start_epoch: 150
   min_lr: 0.0000001
