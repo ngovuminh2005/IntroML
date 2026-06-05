@@ -31,7 +31,7 @@ class Predictor:
         model = get_generator(model_name or config['model'])
         model.load_state_dict(torch.load(weights_path)['model'])
         self.model = model.cuda()
-        self.model.train(True)
+        self.model.eval()
         # GAN inference should be in train mode to use actual stats in norm layers,
         # it's not a bug
         self.normalize_fn = get_normalize()
@@ -145,9 +145,5 @@ def get_files():
 
 
 if __name__ == '__main__':
-  #  Fire(main)
-#增加批量处理图片：
-    img_path=get_files()
-    for i in img_path:
-        main(i)
-    # main('test_img/tt.mp4')
+    Fire(main)
+    
