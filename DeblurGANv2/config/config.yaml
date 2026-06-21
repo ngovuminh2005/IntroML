@@ -3,8 +3,8 @@ project: deblur_gan
 experiment_desc: fpn
 
 train:
-  files_a: &FILES_A /kaggle/input/datasets/jesucristo/gopro-data/train/**/blur/*.png
-  files_b: &FILES_B /kaggle/input/datasets/jesucristo/gopro-data/train/**/sharp/*.png
+  files_a: &FILES_A ../datasets/deblurring/train/GoPro/full/input/*.png
+  files_b: &FILES_B ../datasets/deblurring/train/GoPro/full/target/*.png
   size: &SIZE 256
   crop: random
   preload: &PRELOAD false
@@ -12,16 +12,6 @@ train:
   bounds: [0, .9]
   scope: geometric
   corrupt: &CORRUPT
-    - name: cutout
-      prob: 0.5
-      num_holes: 3
-      max_h_size: 25
-      max_w_size: 25
-    - name: jpeg
-      quality_lower: 70
-      quality_upper: 90
-    - name: motion_blur
-    - name: median_blur
     - name: gamma
     - name: rgb_shift
     - name: hsv_shift
@@ -31,12 +21,12 @@ val:
   files_a: *FILES_A
   files_b: *FILES_B
   size: *SIZE
-  scope: weak
+  scope: geometric
   crop: center
   preload: *PRELOAD
   preload_size: *PRELOAD_SIZE
   bounds: [.9, 1]
-  corrupt: ~
+  corrupt: *CORRUPT
 
 phase: train
 warmup_num: 3
@@ -52,16 +42,16 @@ model:
   norm_layer: instance
   dropout: True
 
-num_epochs: 300
-train_batches_per_epoch: 1000
+num_epochs: 200
+train_batches_per_epoch: 500
 val_batches_per_epoch: 100
-batch_size: 1
+batch_size: 4
 image_size: [256, 256]
 
 optimizer:
   name: adam
-  lr: 0.0001
+  lr: 0.0002
 scheduler:
   name: linear
-  start_epoch: 150
+  start_epoch: 75
   min_lr: 0.0000001

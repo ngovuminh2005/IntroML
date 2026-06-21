@@ -114,7 +114,7 @@ class DiscLossLS(DiscLoss):
 		return 'DiscLossLS'
 
 	def __init__(self, opt, tensor):
-		super(DiscLoss, self).__init__(opt, tensor)
+		DiscLoss.__init__(self, opt, tensor)
 		# DiscLoss.initialize(self, opt, tensor)
 		self.criterionGAN = GANLoss(use_l1=True, tensor=tensor)
 		

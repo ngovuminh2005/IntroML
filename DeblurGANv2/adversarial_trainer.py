@@ -52,6 +52,12 @@ class NoGAN(GANTrainer):
     def get_params(self):
         return [torch.nn.Parameter(torch.Tensor(1))]
 
+    def state_dict(self):
+        return {}
+
+    def load_state_dict(self, state):
+        pass
+
     class Factory:
         @staticmethod
         def create(net_d, criterion): return NoGAN(net_d, criterion)
@@ -70,6 +76,12 @@ class SingleGAN(GANTrainer):
 
     def get_params(self):
         return self.net_d.parameters()
+
+    def state_dict(self):
+        return {'net_d': self.net_d.state_dict()}
+
+    def load_state_dict(self, state):
+        self.net_d.load_state_dict(state['net_d'])
 
     class Factory:
         @staticmethod
@@ -92,6 +104,14 @@ class DoubleGAN(GANTrainer):
 
     def get_params(self):
         return list(self.patch_d.parameters()) + list(self.full_d.parameters())
+
+    def state_dict(self):
+        return {'patch_d': self.patch_d.state_dict(),
+                'full_d': self.full_d.state_dict()}
+
+    def load_state_dict(self, state):
+        self.patch_d.load_state_dict(state['patch_d'])
+        self.full_d.load_state_dict(state['full_d'])
 
     class Factory:
         @staticmethod

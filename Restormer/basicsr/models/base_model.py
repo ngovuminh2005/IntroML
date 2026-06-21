@@ -345,10 +345,19 @@ class BaseModel():
             self.optimizers), 'Wrong lengths of optimizers'
         assert len(resume_schedulers) == len(
             self.schedulers), 'Wrong lengths of schedulers'
+        logger = get_root_logger()
         for i, o in enumerate(resume_optimizers):
-            self.optimizers[i].load_state_dict(o)
+            try:
+                self.optimizers[i].load_state_dict(o)
+            except ValueError as exc:
+                logger.warning(
+                    f'Skip loading optimizer state {i} because it is incompatible with the current optimizer: {exc}')
         for i, s in enumerate(resume_schedulers):
-            self.schedulers[i].load_state_dict(s)
+            try:
+                self.schedulers[i].load_state_dict(s)
+            except ValueError as exc:
+                logger.warning(
+                    f'Skip loading scheduler state {i} because it is incompatible with the current optimizer: {exc}')
 
     def reduce_loss_dict(self, loss_dict):
         """reduce loss dict.

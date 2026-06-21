@@ -1,5 +1,6 @@
 import importlib
 import torch
+from muon import SingleDeviceMuonWithAuxAdam
 from collections import OrderedDict
 from copy import deepcopy
 from os import path as osp
@@ -115,19 +116,60 @@ class ImageCleanModel(BaseModel):
     def setup_optimizers(self):
         train_opt = self.opt['train']
         optim_params = []
+        muon_params = []
+        aux_params = []
 
         for k, v in self.net_g.named_parameters():
             if v.requires_grad:
                 optim_params.append(v)
+                if v.ndim >= 2:
+                    muon_params.append(v)
+                else:
+                    aux_params.append(v)
             else:
                 logger = get_root_logger()
                 logger.warning(f'Params {k} will not be optimized.')
 
         optim_type = train_opt['optim_g'].pop('type')
+        muon_lr = train_opt['optim_g'].pop('muon_lr', None)
+        muon_momentum = train_opt['optim_g'].pop('muon_momentum', 0.95)
+        muon_weight_decay = train_opt['optim_g'].pop('muon_weight_decay', None)
+        muon_nesterov = train_opt['optim_g'].pop('muon_nesterov', True)
+        muon_ns_steps = train_opt['optim_g'].pop('muon_ns_steps', 5)
+        muon_aux_lr = train_opt['optim_g'].pop('muon_aux_lr', None)
+        muon_aux_weight_decay = train_opt['optim_g'].pop('muon_aux_weight_decay', None)
+        muon_aux_beta1 = train_opt['optim_g'].pop('muon_aux_beta1', 0.9)
+        muon_aux_beta2 = train_opt['optim_g'].pop('muon_aux_beta2', 0.999)
+        muon_aux_eps = train_opt['optim_g'].pop('muon_aux_eps', 1e-8)
         if optim_type == 'Adam':
             self.optimizer_g = torch.optim.Adam(optim_params, **train_opt['optim_g'])
         elif optim_type == 'AdamW':
             self.optimizer_g = torch.optim.AdamW(optim_params, **train_opt['optim_g'])
+        elif optim_type in ('SingleDeviceMuonWithAuxAdam', 'Muon'):
+            base_lr = train_opt['optim_g'].pop('lr', 1e-3)
+            base_weight_decay = train_opt['optim_g'].pop('weight_decay', 0.0)
+            train_opt['optim_g'].pop('betas', None)
+            param_groups = []
+            if muon_params:
+                param_groups.append({
+                    'params': muon_params,
+                    'lr': muon_lr if muon_lr is not None else 0.02,
+                    'momentum': muon_momentum,
+                    'weight_decay': muon_weight_decay if muon_weight_decay is not None else base_weight_decay,
+                    'nesterov': muon_nesterov,
+                    'ns_steps': muon_ns_steps,
+                    'use_muon': True,
+                })
+            if aux_params:
+                param_groups.append({
+                    'params': aux_params,
+                    'lr': muon_aux_lr if muon_aux_lr is not None else base_lr,
+                    'betas': (muon_aux_beta1, muon_aux_beta2),
+                    'eps': muon_aux_eps,
+                    'weight_decay': muon_aux_weight_decay if muon_aux_weight_decay is not None else base_weight_decay,
+                    'use_muon': False,
+                })
+            self.optimizer_g = SingleDeviceMuonWithAuxAdam(param_groups)
         else:
             raise NotImplementedError(
                 f'optimizer {optim_type} is not supperted yet.')

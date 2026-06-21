@@ -130,7 +130,7 @@ def compute_psnr(image_true, image_test, image_mask, data_range=None):
 
 
 def compute_ssim(tar_img, prd_img, cr1):
-    ssim_pre, ssim_map = structural_similarity(tar_img, prd_img, multichannel=True, gaussian_weights=True, use_sample_covariance=False, data_range = 1.0, full=True)
+    ssim_pre, ssim_map = structural_similarity(tar_img, prd_img, channel_axis=-1, gaussian_weights=True, use_sample_covariance=False, data_range=1.0, full=True)
     ssim_map = ssim_map * cr1
     r = int(3.5 * 1.5 + 0.5)  # radius as in ndimage
     win_size = 2 * r + 1

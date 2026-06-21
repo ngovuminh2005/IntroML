@@ -1,4 +1,5 @@
 import time
+import os
 from options.train_options import TrainOptions
 from data.data_loader import CreateDataLoader
 from models.models import create_model
@@ -51,15 +52,26 @@ def train(opt, data_loader, model, visualizer):
 
 if __name__ == '__main__':
 	freeze_support()
+	import torch
+	torch.backends.cuda.matmul.allow_tf32 = True
+	torch.backends.cudnn.allow_tf32 = True
+	torch.backends.cudnn.benchmark = True
 
 	# python train.py --dataroot /.path_to_your_data --learn_residual --resize_or_crop crop --fineSize CROP_SIZE (we used 256)
-
 	opt = TrainOptions().parse()
-	opt.dataroot = 'D:\Photos\TrainingData\BlurredSharp\combined'
+	opt.batchSize = int(os.environ.get('BATCH_SIZE', 8))
+	opt.nThreads = int(os.environ.get('NUM_WORKERS', 4))
+	opt.use_amp = True
+	opt.dataroot = os.environ.get('DATAROOT', '../datasets/deblurring/train/GoPro')
+	opt.phase = os.environ.get('PHASE', 'full')                 # -> dataroot/full/input  &  dataroot/full/target
+	opt.dataset_mode = 'paired'
 	opt.learn_residual = True
 	opt.resize_or_crop = "crop"
-	opt.fineSize = 256
-	opt.gan_type = "gan"
+	opt.fineSize = int(os.environ.get('CROP_SIZE', 256))
+	opt.gan_type = "wgan-gp"
+	opt.display_id = 0                 
+	opt.name = os.environ.get('EXPERIMENT_NAME', 'gopro')
+
 	# opt.which_model_netG = "unet_256"
 
 	# default = 5000

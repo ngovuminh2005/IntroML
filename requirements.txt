@@ -1,0 +1,42 @@
+# Core deep learning stack
+# Pick the torch/torchvision build that matches your CUDA version if this generic install is not suitable.
+torch
+torchvision
+
+# Numerical computing and image processing
+numpy
+scipy
+opencv-python-headless
+Pillow
+scikit-image
+matplotlib
+h5py
+lmdb
+PyYAML
+
+# Training utilities
+tqdm
+joblib
+natsort
+einops
+yacs
+tensorboard
+tensorboardX
+wandb
+visdom
+glog
+fire
+
+# Model/backbone dependencies used by the baselines
+timm
+pretrainedmodels
+torchsummary
+ptflops
+linformer
+lpips
+scikit-learn
+albumentations>=1.0.0
+
+dominate
+beautifulsoup4
+requests

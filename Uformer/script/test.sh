@@ -1,15 +1,44 @@
-### test on SIDD ###
-# python3 test/test_sidd.py --input_dir ../datasets/denoising/sidd_val/ --result_dir ./results/denoising/SIDD/ --weights ./logs/denoising/SIDD/Uformer_B/models/model_best.pth 
+#!/usr/bin/env bash
+set -euo pipefail
 
-### test on DND ###
-# python3 test/test_dnd.py --input_dir ../datasets/denoising/dnd/input/ --result_dir ./results/denoising/DND/ --weights ./logs/denoising/SIDD/Uformer_B/models/model_best.pth 
+cd "$(dirname "$0")/.."
 
+PY="${PY:-python3}"
+DATASET="${DATASET:-GoPro}"
+ARCH="${ARCH:-Uformer_B}"
+GPUS="${GPUS:-0}"
+WEIGHTS="${WEIGHTS:-./logs/motiondeblur/GoPro/Uformer_B/models/model_best.pth}"
+INPUT_DIR="${INPUT_DIR:-../datasets/deblurring}"
+RESULT_DIR="${RESULT_DIR:-./results/deblurring}"
 
-### test on GoPro ###
-# python3 test/test_gopro_hide.py --input_dir ../datasets/deblurring/GoPro/test/ --result_dir ./results/deblurring/GoPro/Uformer_B/ --weights ./logs/motiondeblur/GoPro/Uformer_B/models/model_best.pth
-
-### test on HIDE ###
-# python3 test/test_gopro_hide.py --input_dir ../datasets/deblurring/HIDE/test/ --result_dir ./results/deblurring/HIDE/Uformer_B/ --weights ./logs/motiondeblur/GoPro/Uformer_B/models/model_best.pth
-
-### test on RealBlur ###
-# python3 test/test_realblur.py --input_dir ../datasets/deblurring/ --result_dir ./results/deblurring/ --weights ./logs/motiondeblur/GoPro/Uformer_B/models/model_best.pth
+case "$DATASET" in
+  GoPro)
+    "$PY" test/test_gopro_hide.py \
+      --input_dir "${INPUT_DIR}/GoPro/test/" \
+      --result_dir "${RESULT_DIR}/GoPro/${ARCH}/" \
+      --weights "$WEIGHTS" \
+      --gpus "$GPUS" \
+      --arch "$ARCH"
+    ;;
+  HIDE)
+    "$PY" test/test_gopro_hide.py \
+      --input_dir "${INPUT_DIR}/HIDE/test/" \
+      --result_dir "${RESULT_DIR}/HIDE/${ARCH}/" \
+      --weights "$WEIGHTS" \
+      --gpus "$GPUS" \
+      --arch "$ARCH"
+    ;;
+  RealBlur_J|RealBlur_R|RealBlur_J,RealBlur_R)
+    "$PY" test/test_realblur.py \
+      --input_dir "$INPUT_DIR" \
+      --result_dir "$RESULT_DIR" \
+      --dataset "$DATASET" \
+      --weights "$WEIGHTS" \
+      --gpus "$GPUS" \
+      --arch "$ARCH"
+    ;;
+  *)
+    echo "Unsupported DATASET=$DATASET. Use GoPro, HIDE, RealBlur_J, RealBlur_R, or RealBlur_J,RealBlur_R." >&2
+    exit 1
+    ;;
+esac

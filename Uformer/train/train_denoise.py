@@ -24,6 +24,7 @@ torch.backends.cudnn.benchmark = True
 
 import torch.nn as nn
 import torch.optim as optim
+from muon import SingleDeviceMuonWithAuxAdam
 from torch.utils.data import DataLoader
 from natsort import natsorted
 import glob
@@ -70,11 +71,48 @@ with open(logname,'a') as f:
     f.write(str(model_restoration)+'\n')
 
 ######### Optimizer ###########
+def build_muon_optimizer(model, opt):
+    muon_params = []
+    aux_params = []
+    for name, param in model.named_parameters():
+        if not param.requires_grad:
+            continue
+        if param.ndim >= 2:
+            muon_params.append(param)
+        else:
+            aux_params.append(param)
+
+    param_groups = []
+    if muon_params:
+        param_groups.append({
+            "params": muon_params,
+            "lr": opt.muon_lr,
+            "momentum": opt.muon_momentum,
+            "weight_decay": opt.muon_weight_decay if opt.muon_weight_decay is not None else opt.weight_decay,
+            "nesterov": opt.muon_nesterov,
+            "ns_steps": opt.muon_ns_steps,
+            "use_muon": True,
+        })
+    if aux_params:
+        param_groups.append({
+            "params": aux_params,
+            "lr": opt.muon_aux_lr if opt.muon_aux_lr is not None else opt.lr_initial,
+            "betas": (opt.muon_aux_beta1, opt.muon_aux_beta2),
+            "eps": opt.muon_aux_eps,
+            "weight_decay": opt.muon_aux_weight_decay if opt.muon_aux_weight_decay is not None else opt.weight_decay,
+            "use_muon": False,
+        })
+    return SingleDeviceMuonWithAuxAdam(param_groups)
+
+
 start_epoch = 1
-if opt.optimizer.lower() == 'adam':
+optimizer_name = opt.optimizer.lower()
+if optimizer_name == 'adam':
     optimizer = optim.Adam(model_restoration.parameters(), lr=opt.lr_initial, betas=(0.9, 0.999),eps=1e-8, weight_decay=opt.weight_decay)
-elif opt.optimizer.lower() == 'adamw':
-        optimizer = optim.AdamW(model_restoration.parameters(), lr=opt.lr_initial, betas=(0.9, 0.999),eps=1e-8, weight_decay=opt.weight_decay)
+elif optimizer_name == 'adamw':
+    optimizer = optim.AdamW(model_restoration.parameters(), lr=opt.lr_initial, betas=(0.9, 0.999),eps=1e-8, weight_decay=opt.weight_decay)
+elif optimizer_name in ('singledevicemuonwithauxadam', 'muon'):
+    optimizer = build_muon_optimizer(model_restoration, opt)
 else:
     raise Exception("Error optimizer...")
 

@@ -47,13 +47,13 @@ class PerceptualLoss():
     def get_loss(self, fakeIm, realIm):
         fakeIm = (fakeIm + 1) / 2.0
         realIm = (realIm + 1) / 2.0
-        fakeIm[0, :, :, :] = self.transform(fakeIm[0, :, :, :])
-        realIm[0, :, :, :] = self.transform(realIm[0, :, :, :])
+        fakeIm = self.transform(fakeIm)
+        realIm = self.transform(realIm)
         f_fake = self.contentFunc.forward(fakeIm)
         f_real = self.contentFunc.forward(realIm)
         f_real_no_grad = f_real.detach()
         loss = self.criterion(f_fake, f_real_no_grad)
-        return 0.006 * torch.mean(loss) + 0.5 * nn.MSELoss()(fakeIm, realIm)
+        return 0.006 * torch.mean(loss) + 0.1 * nn.L1Loss()(fakeIm, realIm)
 
     def __call__(self, fakeIm, realIm):
         return self.get_loss(fakeIm, realIm)

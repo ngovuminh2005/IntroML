@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Datasets and archives
+datasets/
+datasets.zip
+*.zip
+
+# Checkpoints and model weights
+*.pth
+*.pt
+*.h5
+checkpoints/
+pretrained_models/
+
+# Training/evaluation outputs
+logs/
+results/
+experiments/
+tb_logger/
+submit/
+muon_out/
+gopro_test_outputs/
+examples_eval/
+hf_checkpoint_bundle/
+linhnv/
+linhnv_B.png
+linhnv_S.jpg
+
+# Local/generated files
+wandb/
+.DS_Store
+.ipynb_checkpoints/
+
+# Demo/local images
+DeblurGANv2/test_img/J_*.png
+DeblurGANv2/test_img/R_*.png
