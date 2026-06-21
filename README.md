@@ -1,4 +1,4 @@
-# IntroML Deblurring Baselines
+# Bài tập lớn: Deep learning for motion deblurring, học phần Nhập môn Học máy và Khai phá dữ liệu, kì 20252 Mã lớp 168732
 
 ## 1. Dataset
 
